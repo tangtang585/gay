@@ -1,0 +1,106 @@
+-- hope you enjoy we script --
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local RunService = game:GetService("RunService")
+
+local Window = Rayfield:CreateWindow({
+   Name = "ULTIMA HUB | V13 (STRICT)",
+   LoadingTitle = "Bypassing Server Checks...",
+   LoadingSubtitle = "Forcing Stats...",
+   ConfigurationSaving = { Enabled = true, FolderName = "UltimaConfig" }
+})
+
+-- [[ SHARED VALUES ]] --
+_G.WalkSpeed = 16
+_G.JumpPower = 50
+_G.GodMode = false
+
+-- [[ THE "STRICT" BYPASS LOOP ]] --
+-- This runs every single frame to stop the game from resetting you
+RunService.Stepped:Connect(function()
+    local p = game.Players.LocalPlayer
+    if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
+        local hum = p.Character:FindFirstChildOfClass("Humanoid")
+        
+        -- Force Speed (if slider is moved)
+        if _G.WalkSpeed > 16 then
+            hum.WalkSpeed = _G.WalkSpeed
+        end
+        
+        -- Force Jump (if slider is moved)
+        if _G.JumpPower > 50 then
+            hum.UseJumpPower = true
+            hum.JumpPower = _G.JumpPower
+            hum.JumpHeight = _G.JumpPower / 7
+        end
+
+        -- Force God Mode
+        if _G.GodMode then
+            hum.Health = 100
+            hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+        end
+    end
+end)
+
+-- [[ 🏃 MOVEMENT TAB ]] --
+local MoveTab = Window:CreateTab("🏃 Movement", nil)
+MoveTab:CreateSlider({
+   Name = "Strict Walk Speed",
+   Range = {16, 300},
+   Increment = 1,
+   CurrentValue = 16,
+   Callback = function(V) _G.WalkSpeed = V end,
+})
+
+MoveTab:CreateSlider({
+   Name = "Strict Jump Power",
+   Range = {50, 600},
+   Increment = 1,
+   CurrentValue = 50,
+   Callback = function(V) _G.JumpPower = V end,
+})
+
+-- [[ 🛡️ DEFENSE TAB ]] --
+local DefTab = Window:CreateTab("🛡️ Defense", nil)
+DefTab:CreateToggle({
+   Name = "Auto-Heal God Mode",
+   CurrentValue = false,
+   Callback = function(V) _G.GodMode = V end,
+})
+
+-- [[ 👁️ VISUALS TAB ]] --
+local VisTab = Window:CreateTab("👁️ Visuals", nil)
+VisTab:CreateToggle({
+   Name = "Player ESP",
+   CurrentValue = false,
+   Callback = function(V)
+      for _, p in pairs(game.Players:GetPlayers()) do
+          if p ~= game.Players.LocalPlayer and p.Character then
+              if V then
+                  local h = Instance.new("Highlight", p.Character)
+                  h.Name = "UltimaESP"
+                  h.FillColor = Color3.fromRGB(255, 0, 0)
+              elseif p.Character:FindFirstChild("UltimaESP") then
+                  p.Character.UltimaESP:Destroy()
+              end
+          end
+      end
+   end,
+})
+
+-- [[ ⚙️ SETTINGS TAB ]] --
+local ConfigTab = Window:CreateTab("⚙️ Settings", nil)
+ConfigTab:CreateDropdown({
+   Name = "Menu Theme",
+   Options = {"Default", "AmberGlow", "Plasma", "Ocean", "Green", "Dark"},
+   CurrentOption = {"Default"},
+   Callback = function(Option) Window:ModifyTheme(Option[1]) end,
+})
+
+-- [[ 🛠️ TOOLS ]] --
+local ToolTab = Window:CreateTab("🛠️ Tools", nil)
+ToolTab:CreateButton({
+   Name = "Load Dark Dex",
+   Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))() end,
+})
+
+Rayfield:Notify({Title = "V13 READY", Content = "Strict Loop is forcing your stats!", Duration = 5})
