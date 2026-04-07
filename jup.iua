@@ -2,18 +2,18 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local RunService = game:GetService("RunService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA V1.5 | MOBILE POWER",
-   LoadingTitle = "Mobile Physics Patch...",
-   ConfigurationSaving = { Enabled = true, FolderName = "UltimaMobile" }
+   Name = "ULTIMA V3 | MOBILE FIX",
+   LoadingTitle = "Patching Touch Controls...",
+   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV34" }
 })
 
 -- [[ SHARED VALUES ]] --
 _G.SpeedBoost = 0
-_G.JumpPower = 0
+_G.JumpVelocity = 0
 _G.AutoFly = false
 _G.InfJump = false
 
--- [[ MOBILE FORCE LOOP ]] --
+-- [[ MOBILE VELOCITY LOOP ]] --
 local MainLoop = RunService.Heartbeat:Connect(function()
     local p = game.Players.LocalPlayer
     local char = p.Character
@@ -21,19 +21,61 @@ local MainLoop = RunService.Heartbeat:Connect(function()
         local hrp = char.HumanoidRootPart
         local hum = char:FindFirstChild("Humanoid")
         
-        -- Speed Bypass (Touch Friendly)
+        -- Speed (Bypass for Mobile Joystick)
         if _G.SpeedBoost > 0 and hum and hum.MoveDirection.Magnitude > 0 then
             hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (_G.SpeedBoost / 10))
         end
 
-        -- Continuous Power Jump (No Space Key Needed)
-        if _G.AutoFly and _G.JumpPower > 0 then
-            hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.JumpPower, hrp.Velocity.Z)
+        -- THE JUMP FIX: Constant upward force when toggled
+        if _G.AutoFly and _G.JumpVelocity > 0 then
+            hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.JumpVelocity, hrp.Velocity.Z)
         end
     end
 end)
 
--- [[ MOBILE INF JUMP ]] --
+-- [[ MASTER MOBILE TAB ]] --
+local Tab = Window:CreateTab("📱 Master Menu", nil)
+
+Tab:CreateSection("🚀 MOVEMENT")
+
+Tab:CreateSlider({
+   Name = "Jump Power Level",
+   Range = {0, 500},
+   Increment = 10,
+   CurrentValue = 0,
+   Callback = function(V) _G.JumpVelocity = V end,
+})
+
+Tab:CreateToggle({
+   Name = "ACTIVATE FLY (Jump Fix)",
+   CurrentValue = false,
+   Callback = function(V) _G.AutoFly = V end,
+})
+
+Tab:CreateToggle({
+   Name = "Infinite Jump (Air Tap)",
+   CurrentValue = false,
+   Callback = function(V) _G.InfJump = V end,
+})
+
+Tab:CreateSlider({
+   Name = "Speed Boost",
+   Range = {0, 100},
+   Increment = 1,
+   CurrentValue = 0,
+   Callback = function(V) _G.SpeedBoost = V end,
+})
+
+Tab:CreateSection("⚙️ SYSTEM")
+Tab:CreateButton({
+   Name = "🚨 FULL RESET",
+   Callback = function()
+       MainLoop:Disconnect()
+       Rayfield:Destroy()
+   end,
+})
+
+-- [[ INF JUMP LOGIC ]] --
 game:GetService("UserInputService").JumpRequest:Connect(function()
     if _G.InfJump then
         local p = game.Players.LocalPlayer
@@ -43,56 +85,4 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
     end
 end)
 
--- [[ 🏃 MOVEMENT TAB ]] --
-local MoveTab = Window:CreateTab("🏃 Movement", nil)
-
-MoveTab:CreateSlider({
-   Name = "Jump Power Level",
-   Range = {0, 300},
-   Increment = 10,
-   CurrentValue = 0,
-   Callback = function(V) _G.JumpPower = V end,
-})
-
-MoveTab:CreateToggle({
-   Name = "Toggle Power Jump (Fly)",
-   CurrentValue = false,
-   Callback = function(V) _G.AutoFly = V end,
-})
-
-MoveTab:CreateToggle({
-   Name = "Infinite Jump (Air Tap)",
-   CurrentValue = false,
-   Callback = function(V) _G.InfJump = V end,
-})
-
-MoveTab:CreateSlider({
-   Name = "Speed Boost",
-   Range = {0, 100},
-   Increment = 1,
-   CurrentValue = 0,
-   Callback = function(V) _G.SpeedBoost = V end,
-})
-
--- [[ 🛡️ DEFENSE ]] --
-local DefTab = Window:CreateTab("🛡️ Defense", nil)
-DefTab:CreateToggle({
-    Name = "Anti-Death",
-    CurrentValue = false,
-    Callback = function(V)
-        local hum = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if hum then hum.Health = 100 end
-    end
-})
-
--- [[ ⚙️ SETTINGS ]] --
-local ConfigTab = Window:CreateTab("⚙️ Settings", nil)
-ConfigTab:CreateButton({
-   Name = "🚨 FULL RESET",
-   Callback = function()
-       MainLoop:Disconnect()
-       Rayfield:Destroy()
-   end,
-})
-
-Rayfield:Notify({Title = "V1.5 MOBILE", Content = "Power Jump is now a TOGGLE for phones!", Duration = 5})
+Rayfield:Notify({Title = "V3 READY", Content = "Use the 'ACTIVATE FLY' toggle to jump!", Duration = 5})
