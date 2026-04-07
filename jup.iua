@@ -3,68 +3,76 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA V28 | UN-GLITCHER",
-   LoadingTitle = "Fixing Noodle Mode...",
-   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV28" }
+   Name = "ULTIMA V29 | SERVER-BYPASS",
+   LoadingTitle = "Bypassing Server Locks...",
+   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV29" }
 })
 
 -- [[ SHARED VALUES ]] --
-_G.BlinkSpeed = 0
-_G.JumpPower = 0
+_G.SpeedBoost = 0
+_G.JumpForce = 0
 _G.GodMode = false
 _G.InfJump = false
-_G.AntiRagdoll = false
 
--- [[ THE SUPREME FIX LOOP ]] --
+-- [[ THE DELTA-FORCE LOOP ]] --
 local MainLoop = RunService.Heartbeat:Connect(function()
     local p = game.Players.LocalPlayer
     local char = p.Character
-    if char and char:FindFirstChild("Humanoid") then
+    if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
         local hum = char.Humanoid
-        local hrp = char:FindFirstChild("HumanoidRootPart")
+        local hrp = char.HumanoidRootPart
         
-        -- SPEED & JUMP FIX
-        if _G.BlinkSpeed > 0 and hum.MoveDirection.Magnitude > 0 then
-            hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (_G.BlinkSpeed / 10))
-        end
-        if _G.JumpPower > 0 and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-            hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.JumpPower, hrp.Velocity.Z)
+        -- DELTA SPEED (Moves your CFrame based on direction)
+        if _G.SpeedBoost > 0 and hum.MoveDirection.Magnitude > 0 then
+            hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (_G.SpeedBoost / 10))
         end
 
-        -- THE "ANTI-NOODLE" SYSTEM
-        if _G.AntiRagdoll then
-            hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
-            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-            hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
-            -- Force character to stand up
-            if hum:GetState() == Enum.HumanoidStateType.Ragdoll or hum:GetState() == Enum.HumanoidStateType.FallingDown then
-                hum:ChangeState(Enum.HumanoidStateType.GettingUp)
-            end
+        -- DELTA JUMP (Manual Velocity Injection)
+        if _G.JumpForce > 0 and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.JumpForce, hrp.Velocity.Z)
         end
 
-        if _G.GodMode then hum.Health = 100 end
+        -- ANTI-DEATH
+        if _G.GodMode then
+            hum.Health = 100
+            hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+        end
     end
 end)
 
--- [[ 🏃 MOVEMENT ]] --
+-- [[ 🏃 MOVEMENT TAB ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
-MoveTab:CreateSlider({Name = "Blink Speed", Range = {0, 50}, CurrentValue = 0, Callback = function(V) _G.BlinkSpeed = V end})
-MoveTab:CreateSlider({Name = "Physics Jump", Range = {0, 300}, CurrentValue = 0, Callback = function(V) _G.JumpPower = V end})
-MoveTab:CreateToggle({Name = "Infinite Jump", CurrentValue = false, Callback = function(V) _G.InfJump = V end})
 
--- [[ 🛡️ DEFENSE (THE FIX) ]] --
-local DefTab = Window:CreateTab("🛡️ Defense", nil)
-DefTab:CreateToggle({
-   Name = "Anti-Ragdoll (Force Stand)",
-   CurrentValue = false,
-   Callback = function(V) _G.AntiRagdoll = V end,
+MoveTab:CreateSlider({
+   Name = "Delta Speed (Bypass)",
+   Range = {0, 100},
+   Increment = 1,
+   CurrentValue = 0,
+   Callback = function(V) _G.SpeedBoost = V end,
 })
-DefTab:CreateToggle({Name = "Immortal God Mode", CurrentValue = false, Callback = function(V) _G.GodMode = V end})
+
+MoveTab:CreateSlider({
+   Name = "Delta Jump (Velocity)",
+   Range = {0, 400},
+   Increment = 5,
+   CurrentValue = 0,
+   Callback = function(V) _G.JumpForce = V end,
+})
+
+MoveTab:CreateToggle({
+   Name = "Infinite Jump (Air Leap)",
+   CurrentValue = false,
+   Callback = function(V) _G.InfJump = V end,
+})
+
+-- [[ 🛡️ DEFENSE ]] --
+local DefTab = Window:CreateTab("🛡️ Defense", nil)
+DefTab:CreateToggle({Name = "Immortal Mode", CurrentValue = false, Callback = function(V) _G.GodMode = V end})
 
 -- [[ ⚙️ SETTINGS ]] --
 local ConfigTab = Window:CreateTab("⚙️ Settings", nil)
 ConfigTab:CreateButton({
-   Name = "🚨 FULL SCRIPT RESET",
+   Name = "🚨 FULL RESET (IF STUCK)",
    Callback = function()
        MainLoop:Disconnect()
        Rayfield:Destroy()
@@ -75,4 +83,4 @@ ConfigTab:CreateButton({
 local ToolTab = Window:CreateTab("🛠️ Tools", nil)
 ToolTab:CreateButton({Name = "Infinite Yield", Callback = function() loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))() end})
 
-Rayfield:Notify({Title = "V28 ONLINE", Content = "Turn on Anti-Ragdoll to stop flopping!", Duration = 5})
+Rayfield:Notify({Title = "V29 ACTIVE", Content = "Use Delta sliders—they don't use Roblox stats!", Duration = 5})
