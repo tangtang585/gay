@@ -3,19 +3,19 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA HUB | V14 (INF JUMP)",
-   LoadingTitle = "Bypassing Gravity...",
-   LoadingSubtitle = "Adding Air-Jump...",
+   Name = "ULTIMA HUB | V15 (IMMORTAL)",
+   LoadingTitle = "Bypassing Kill-Scripts...",
+   LoadingSubtitle = "Fixing God Mode...",
    ConfigurationSaving = { Enabled = true, FolderName = "UltimaConfig" }
 })
 
--- [[ SHARED VALUES ]] --
+-- [[ GLOBAL VALUES ]] --
 _G.WalkSpeed = 16
 _G.JumpPower = 50
 _G.GodMode = false
 _G.InfJump = false
 
--- [[ INFINITE JUMP LOGIC ]] --
+-- [[ INFINITE JUMP ]] --
 UserInputService.JumpRequest:Connect(function()
     if _G.InfJump then
         local p = game.Players.LocalPlayer
@@ -25,59 +25,69 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- [[ THE STRICT BYPASS LOOP ]] --
+-- [[ THE SUPREME BYPASS LOOP ]] --
 RunService.Stepped:Connect(function()
     local p = game.Players.LocalPlayer
     if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
         local hum = p.Character:FindFirstChildOfClass("Humanoid")
         
+        -- Force Movement
         if _G.WalkSpeed > 16 then hum.WalkSpeed = _G.WalkSpeed end
         if _G.JumpPower > 50 then 
             hum.UseJumpPower = true 
             hum.JumpPower = _G.JumpPower 
-            hum.JumpHeight = _G.JumpPower / 7
         end
+
+        -- THE GOD MODE FIX: Blocks the "Dead" signal every frame
         if _G.GodMode then
-            hum.Health = 100
+            hum.Health = 999999 -- Overfill health to bypass small checks
             hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+            if hum.Health <= 0 then
+                hum.Health = 100
+            end
         end
     end
 end)
 
 -- [[ 1. MOVEMENT TAB ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
-
 MoveTab:CreateToggle({
    Name = "Infinite Jump",
    CurrentValue = false,
-   Callback = function(Value) _G.InfJump = Value end,
+   Callback = function(V) _G.InfJump = V end,
 })
-
 MoveTab:CreateSlider({
-   Name = "Strict Walk Speed",
+   Name = "Strict Speed",
    Range = {16, 300},
-   Increment = 1,
    CurrentValue = 16,
    Callback = function(V) _G.WalkSpeed = V end,
 })
-
 MoveTab:CreateSlider({
-   Name = "Strict Jump Power",
+   Name = "Strict Jump",
    Range = {50, 600},
-   Increment = 1,
    CurrentValue = 50,
    Callback = function(V) _G.JumpPower = V end,
 })
 
--- [[ 2. DEFENSE TAB ]] --
+-- [[ 2. DEFENSE TAB (THE FIX) ]] --
 local DefTab = Window:CreateTab("🛡️ Defense", nil)
 DefTab:CreateToggle({
-   Name = "Auto-Heal God Mode",
+   Name = "ULTRA GOD (Anti-Death)",
    CurrentValue = false,
-   Callback = function(V) _G.GodMode = V end,
+   Callback = function(V) 
+      _G.GodMode = V 
+      Rayfield:Notify({Title = "Defense", Content = "Immortal Mode: " .. (V and "ON" or "OFF"), Duration = 3})
+   end,
 })
 
--- [[ 3. VISUALS TAB ]] --
+DefTab:CreateButton({
+   Name = "Hard Reset (Use if Glitched)",
+   Callback = function()
+       game.Players.LocalPlayer.Character:BreakJoints()
+   end,
+})
+
+-- [[ 3. VISUALS & SETTINGS ]] --
 local VisTab = Window:CreateTab("👁️ Visuals", nil)
 VisTab:CreateToggle({
    Name = "Player ESP",
@@ -88,7 +98,6 @@ VisTab:CreateToggle({
               if V then
                   local h = Instance.new("Highlight", p.Character)
                   h.Name = "UltimaESP"
-                  h.FillColor = Color3.fromRGB(255, 0, 0)
               elseif p.Character:FindFirstChild("UltimaESP") then
                   p.Character.UltimaESP:Destroy()
               end
@@ -97,7 +106,6 @@ VisTab:CreateToggle({
    end,
 })
 
--- [[ 4. SETTINGS & TOOLS ]] --
 local ConfigTab = Window:CreateTab("⚙️ Settings", nil)
 ConfigTab:CreateDropdown({
    Name = "Menu Theme",
@@ -111,5 +119,3 @@ ToolTab:CreateButton({
    Name = "Load Dark Dex",
    Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))() end,
 })
-
-Rayfield:Notify({Title = "V14 LOADED", Content = "Infinite Jump is ready in the Movement tab!", Duration = 5})
