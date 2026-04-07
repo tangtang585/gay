@@ -3,9 +3,9 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA HUB | V17 (ADMIN FIX)",
-   LoadingTitle = "Bypassing Admin Scripts...",
-   LoadingSubtitle = "Setting Force-Stats...",
+   Name = "ULTIMA HUB | V18 (INF ZOOM)",
+   LoadingTitle = "Unlocking Camera Limits...",
+   LoadingSubtitle = "Setting Infinite Zoom...",
    ConfigurationSaving = { Enabled = true, FolderName = "UltimaConfig" }
 })
 
@@ -14,6 +14,20 @@ _G.WalkSpeed = 16
 _G.JumpPower = 50
 _G.GodMode = false
 _G.InfJump = false
+_G.InfZoom = false
+
+-- [[ INFINITE ZOOM LOGIC ]] --
+task.spawn(function()
+    while true do
+        task.wait(1) -- Checks every second
+        local player = game.Players.LocalPlayer
+        if _G.InfZoom and player then
+            player.CameraMaxZoomDistance = 100000 -- Sets zoom to basically infinite
+        elseif not _G.InfZoom and player then
+            player.CameraMaxZoomDistance = 128 -- Returns to normal Roblox limit
+        end
+    end
+end)
 
 -- [[ INFINITE JUMP LOGIC ]] --
 UserInputService.JumpRequest:Connect(function()
@@ -26,24 +40,12 @@ UserInputService.JumpRequest:Connect(function()
 end)
 
 -- [[ THE HEARTBEAT FORCE LOOP ]] --
--- This runs after every frame to override Admin speed resets
 RunService.Heartbeat:Connect(function()
     local p = game.Players.LocalPlayer
     if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
         local hum = p.Character:FindFirstChildOfClass("Humanoid")
-        
-        -- Force Speed
-        if _G.WalkSpeed > 16 then
-            hum.WalkSpeed = _G.WalkSpeed
-        end
-        
-        -- Force Jump
-        if _G.JumpPower > 50 then
-            hum.UseJumpPower = true
-            hum.JumpPower = _G.JumpPower
-        end
-
-        -- Force God Mode
+        if _G.WalkSpeed > 16 then hum.WalkSpeed = _G.WalkSpeed end
+        if _G.JumpPower > 50 then hum.UseJumpPower = true hum.JumpPower = _G.JumpPower end
         if _G.GodMode then
             hum.Health = 100
             hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
@@ -51,37 +53,28 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- [[ 🏃 MOVEMENT TAB ]] --
+-- [[ 1. MOVEMENT TAB ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
-MoveTab:CreateToggle({
-   Name = "Infinite Jump",
+MoveTab:CreateToggle({Name = "Infinite Jump", CurrentValue = false, Callback = function(V) _G.InfJump = V end})
+MoveTab:CreateSlider({Name = "Admin Speed", Range = {16, 500}, CurrentValue = 16, Callback = function(V) _G.WalkSpeed = V end})
+MoveTab:CreateSlider({Name = "Admin Jump", Range = {50, 800}, CurrentValue = 50, Callback = function(V) _G.JumpPower = V end})
+
+-- [[ 2. CAMERA TAB (NEW!) ]] --
+local CamTab = Window:CreateTab("🎥 Camera", nil)
+CamTab:CreateToggle({
+   Name = "Infinite Zoom Out",
    CurrentValue = false,
-   Callback = function(V) _G.InfJump = V end,
-})
-MoveTab:CreateSlider({
-   Name = "Admin Speed",
-   Range = {16, 500},
-   Increment = 1,
-   CurrentValue = 16,
-   Callback = function(V) _G.WalkSpeed = V end,
-})
-MoveTab:CreateSlider({
-   Name = "Admin Jump",
-   Range = {50, 800},
-   Increment = 1,
-   CurrentValue = 50,
-   Callback = function(V) _G.JumpPower = V end,
+   Callback = function(V) 
+      _G.InfZoom = V 
+      Rayfield:Notify({Title = "Camera", Content = "Infinite Zoom: " .. (V and "ON" or "OFF"), Duration = 2})
+   end,
 })
 
--- [[ 🛡️ DEFENSE TAB ]] --
+-- [[ 3. DEFENSE TAB ]] --
 local DefTab = Window:CreateTab("🛡️ Defense", nil)
-DefTab:CreateToggle({
-   Name = "Safe God Mode",
-   CurrentValue = false,
-   Callback = function(V) _G.GodMode = V end,
-})
+DefTab:CreateToggle({Name = "Safe God Mode", CurrentValue = false, Callback = function(V) _G.GodMode = V end})
 
--- [[ 👁️ VISUALS TAB ]] --
+-- [[ 4. VISUALS & TOOLS ]] --
 local VisTab = Window:CreateTab("👁️ Visuals", nil)
 VisTab:CreateToggle({
    Name = "Player ESP",
@@ -100,7 +93,13 @@ VisTab:CreateToggle({
    end,
 })
 
--- [[ ⚙️ SETTINGS & TOOLS ]] --
+local ToolTab = Window:CreateTab("🛠️ Tools", nil)
+ToolTab:CreateButton({
+   Name = "Load Dark Dex",
+   Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))() end,
+})
+
+-- [[ 5. SETTINGS ]] --
 local ConfigTab = Window:CreateTab("⚙️ Settings", nil)
 ConfigTab:CreateDropdown({
    Name = "Menu Theme",
@@ -109,10 +108,4 @@ ConfigTab:CreateDropdown({
    Callback = function(Option) Window:ModifyTheme(Option[1]) end,
 })
 
-local ToolTab = Window:CreateTab("🛠️ Tools", nil)
-ToolTab:CreateButton({
-   Name = "Load Dark Dex",
-   Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))() end,
-})
-
-Rayfield:Notify({Title = "V17 LOADED", Content = "Speed and Jump are now forced for Admin maps!", Duration = 5})
+Rayfield:Notify({Title = "V18 LOADED", Content = "Infinite Zoom added to the Camera tab!", Duration = 5})
