@@ -3,9 +3,9 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA V27 | MASTER RESET",
-   LoadingTitle = "Preparing Bypasses...",
-   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV27" }
+   Name = "ULTIMA V28 | UN-GLITCHER",
+   LoadingTitle = "Fixing Noodle Mode...",
+   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV28" }
 })
 
 -- [[ SHARED VALUES ]] --
@@ -13,67 +13,66 @@ _G.BlinkSpeed = 0
 _G.JumpPower = 0
 _G.GodMode = false
 _G.InfJump = false
+_G.AntiRagdoll = false
 
--- [[ THE MAIN LOOP CONNECTION ]] --
+-- [[ THE SUPREME FIX LOOP ]] --
 local MainLoop = RunService.Heartbeat:Connect(function()
     local p = game.Players.LocalPlayer
     local char = p.Character
-    if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
+    if char and char:FindFirstChild("Humanoid") then
         local hum = char.Humanoid
-        local hrp = char.HumanoidRootPart
+        local hrp = char:FindFirstChild("HumanoidRootPart")
         
-        -- Speed/Blink Force
+        -- SPEED & JUMP FIX
         if _G.BlinkSpeed > 0 and hum.MoveDirection.Magnitude > 0 then
             hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (_G.BlinkSpeed / 10))
         end
-
-        -- Physics Jump Force (Hold Space)
         if _G.JumpPower > 0 and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
             hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.JumpPower, hrp.Velocity.Z)
         end
 
-        -- Anti-Death Force
-        if _G.GodMode then
-            hum.Health = 100
-            hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+        -- THE "ANTI-NOODLE" SYSTEM
+        if _G.AntiRagdoll then
+            hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+            hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+            -- Force character to stand up
+            if hum:GetState() == Enum.HumanoidStateType.Ragdoll or hum:GetState() == Enum.HumanoidStateType.FallingDown then
+                hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+            end
         end
+
+        if _G.GodMode then hum.Health = 100 end
     end
 end)
 
--- [[ 1. MOVEMENT ]] --
+-- [[ 🏃 MOVEMENT ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
 MoveTab:CreateSlider({Name = "Blink Speed", Range = {0, 50}, CurrentValue = 0, Callback = function(V) _G.BlinkSpeed = V end})
 MoveTab:CreateSlider({Name = "Physics Jump", Range = {0, 300}, CurrentValue = 0, Callback = function(V) _G.JumpPower = V end})
 MoveTab:CreateToggle({Name = "Infinite Jump", CurrentValue = false, Callback = function(V) _G.InfJump = V end})
 
--- [[ 2. DEFENSE ]] --
+-- [[ 🛡️ DEFENSE (THE FIX) ]] --
 local DefTab = Window:CreateTab("🛡️ Defense", nil)
+DefTab:CreateToggle({
+   Name = "Anti-Ragdoll (Force Stand)",
+   CurrentValue = false,
+   Callback = function(V) _G.AntiRagdoll = V end,
+})
 DefTab:CreateToggle({Name = "Immortal God Mode", CurrentValue = false, Callback = function(V) _G.GodMode = V end})
 
--- [[ 3. SETTINGS (THE RESET BUTTON) ]] --
+-- [[ ⚙️ SETTINGS ]] --
 local ConfigTab = Window:CreateTab("⚙️ Settings", nil)
-
 ConfigTab:CreateButton({
    Name = "🚨 FULL SCRIPT RESET",
    Callback = function()
-       Rayfield:Notify({Title = "Resetting...", Content = "Closing menu and stopping loops!", Duration = 3})
-       MainLoop:Disconnect() -- Stops the speed/jump loop
-       _G.BlinkSpeed = 0
-       _G.JumpPower = 0
-       _G.GodMode = false
-       Rayfield:Destroy() -- Deletes the menu
+       MainLoop:Disconnect()
+       Rayfield:Destroy()
    end,
 })
 
-ConfigTab:CreateDropdown({
-   Name = "Menu Theme",
-   Options = {"Default", "AmberGlow", "Plasma", "Ocean", "Green", "Dark"},
-   CurrentOption = {"Default"},
-   Callback = function(Option) Window:ModifyTheme(Option[1]) end,
-})
-
--- [[ 4. TOOLS ]] --
+-- [[ 🛠️ TOOLS ]] --
 local ToolTab = Window:CreateTab("🛠️ Tools", nil)
 ToolTab:CreateButton({Name = "Infinite Yield", Callback = function() loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))() end})
 
-Rayfield:Notify({Title = "V27 READY", Content = "Reset button is in the Settings tab!", Duration = 5})
+Rayfield:Notify({Title = "V28 ONLINE", Content = "Turn on Anti-Ragdoll to stop flopping!", Duration = 5})
