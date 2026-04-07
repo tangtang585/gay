@@ -3,36 +3,36 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA V25 | 99 NIGHTS BYPASS",
-   LoadingTitle = "Hard-Patching Movement...",
-   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV25" }
+   Name = "ULTIMA V27 | MASTER RESET",
+   LoadingTitle = "Preparing Bypasses...",
+   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV27" }
 })
 
 -- [[ SHARED VALUES ]] --
-_G.BlinkSpeed = 0 -- 0 is off, 1-5 is safe, 10+ is very fast
-_G.JumpPower = 50
+_G.BlinkSpeed = 0
+_G.JumpPower = 0
 _G.GodMode = false
 _G.InfJump = false
 
--- [[ THE HARD-BYPASS LOOP ]] --
-RunService.Heartbeat:Connect(function()
+-- [[ THE MAIN LOOP CONNECTION ]] --
+local MainLoop = RunService.Heartbeat:Connect(function()
     local p = game.Players.LocalPlayer
     local char = p.Character
     if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
         local hum = char.Humanoid
         local hrp = char.HumanoidRootPart
         
-        -- BLINK BYPASS: Moves your CFrame so WalkSpeed stays 16
+        -- Speed/Blink Force
         if _G.BlinkSpeed > 0 and hum.MoveDirection.Magnitude > 0 then
             hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (_G.BlinkSpeed / 10))
         end
 
-        -- JUMP BYPASS: Forces the velocity up
-        if _G.JumpPower > 50 and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-             hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.JumpPower, hrp.Velocity.Z)
+        -- Physics Jump Force (Hold Space)
+        if _G.JumpPower > 0 and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.JumpPower, hrp.Velocity.Z)
         end
 
-        -- GOD MODE: Constant state check
+        -- Anti-Death Force
         if _G.GodMode then
             hum.Health = 100
             hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
@@ -40,56 +40,40 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- [[ INFINITE JUMP ]] --
-UserInputService.JumpRequest:Connect(function()
-    if _G.InfJump then
-        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-    end
-end)
-
--- [[ 1. MOVEMENT TAB ]] --
+-- [[ 1. MOVEMENT ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
-
-MoveTab:CreateSlider({
-   Name = "Blink Speed (Anti-Reset)",
-   Range = {0, 505},
-   Increment = 1,
-   CurrentValue = 0,
-   Callback = function(V) _G.BlinkSpeed = V end,
-})
-
-MoveTab:CreateSlider({
-   Name = "Forced Jump Power",
-   Range = {50, 300},
-   Increment = 1,
-   CurrentValue = 50,
-   Callback = function(V) _G.JumpPower = V end,
-})
-
+MoveTab:CreateSlider({Name = "Blink Speed", Range = {0, 50}, CurrentValue = 0, Callback = function(V) _G.BlinkSpeed = V end})
+MoveTab:CreateSlider({Name = "Physics Jump", Range = {0, 300}, CurrentValue = 0, Callback = function(V) _G.JumpPower = V end})
 MoveTab:CreateToggle({Name = "Infinite Jump", CurrentValue = false, Callback = function(V) _G.InfJump = V end})
 
--- [[ 2. DEFENSE TAB ]] --
+-- [[ 2. DEFENSE ]] --
 local DefTab = Window:CreateTab("🛡️ Defense", nil)
 DefTab:CreateToggle({Name = "Immortal God Mode", CurrentValue = false, Callback = function(V) _G.GodMode = V end})
 
--- [[ 3. VISUALS & TOOLS ]] --
-local VisTab = Window:CreateTab("👁️ Visuals", nil)
-VisTab:CreateToggle({
-   Name = "Player ESP",
-   CurrentValue = false,
-   Callback = function(V)
-      for _, p in pairs(game.Players:GetPlayers()) do
-          if p ~= game.Players.LocalPlayer and p.Character then
-              if V then
-                  local h = Instance.new("Highlight", p.Character)
-                  h.Name = "UltimaESP"
-              elseif p.Character:FindFirstChild("UltimaESP") then
-                  p.Character.UltimaESP:Destroy()
-              end
-          end
-      end
+-- [[ 3. SETTINGS (THE RESET BUTTON) ]] --
+local ConfigTab = Window:CreateTab("⚙️ Settings", nil)
+
+ConfigTab:CreateButton({
+   Name = "🚨 FULL SCRIPT RESET",
+   Callback = function()
+       Rayfield:Notify({Title = "Resetting...", Content = "Closing menu and stopping loops!", Duration = 3})
+       MainLoop:Disconnect() -- Stops the speed/jump loop
+       _G.BlinkSpeed = 0
+       _G.JumpPower = 0
+       _G.GodMode = false
+       Rayfield:Destroy() -- Deletes the menu
    end,
 })
 
+ConfigTab:CreateDropdown({
+   Name = "Menu Theme",
+   Options = {"Default", "AmberGlow", "Plasma", "Ocean", "Green", "Dark"},
+   CurrentOption = {"Default"},
+   Callback = function(Option) Window:ModifyTheme(Option[1]) end,
+})
+
+-- [[ 4. TOOLS ]] --
 local ToolTab = Window:CreateTab("🛠️ Tools", nil)
 ToolTab:CreateButton({Name = "Infinite Yield", Callback = function() loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))() end})
+
+Rayfield:Notify({Title = "V27 READY", Content = "Reset button is in the Settings tab!", Duration = 5})
