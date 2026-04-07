@@ -1,19 +1,19 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA V1 | POWER EDITION",
-   LoadingTitle = "Boosting Jump Force...",
-   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV31" }
+   Name = "ULTIMA V1.5 | MOBILE POWER",
+   LoadingTitle = "Mobile Physics Patch...",
+   ConfigurationSaving = { Enabled = true, FolderName = "UltimaMobile" }
 })
 
 -- [[ SHARED VALUES ]] --
 _G.SpeedBoost = 0
-_G.PowerJump = 0
+_G.JumpPower = 0
+_G.AutoFly = false
 _G.InfJump = false
 
--- [[ POWER JUMP LOOP ]] --
+-- [[ MOBILE FORCE LOOP ]] --
 local MainLoop = RunService.Heartbeat:Connect(function()
     local p = game.Players.LocalPlayer
     local char = p.Character
@@ -21,20 +21,20 @@ local MainLoop = RunService.Heartbeat:Connect(function()
         local hrp = char.HumanoidRootPart
         local hum = char:FindFirstChild("Humanoid")
         
-        -- Power Jump Logic (While Holding Space)
-        if _G.PowerJump > 0 and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-            hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.PowerJump, hrp.Velocity.Z)
-        end
-
-        -- Speed Bypass
+        -- Speed Bypass (Touch Friendly)
         if _G.SpeedBoost > 0 and hum and hum.MoveDirection.Magnitude > 0 then
             hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (_G.SpeedBoost / 10))
+        end
+
+        -- Continuous Power Jump (No Space Key Needed)
+        if _G.AutoFly and _G.JumpPower > 0 then
+            hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.JumpPower, hrp.Velocity.Z)
         end
     end
 end)
 
--- [[ INF JUMP LOGIC ]] --
-UserInputService.JumpRequest:Connect(function()
+-- [[ MOBILE INF JUMP ]] --
+game:GetService("UserInputService").JumpRequest:Connect(function()
     if _G.InfJump then
         local p = game.Players.LocalPlayer
         if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
@@ -43,39 +43,56 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- [[ MOVEMENT TAB ]] --
+-- [[ 🏃 MOVEMENT TAB ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
 
 MoveTab:CreateSlider({
-   Name = "POWER JUMP (Hold Space)",
-   Range = {0, 500},
+   Name = "Jump Power Level",
+   Range = {0, 300},
    Increment = 10,
    CurrentValue = 0,
-   Callback = function(V) _G.PowerJump = V end,
+   Callback = function(V) _G.JumpPower = V end,
 })
 
 MoveTab:CreateToggle({
-   Name = "Infinite Jump (Air Walk)",
+   Name = "Toggle Power Jump (Fly)",
+   CurrentValue = false,
+   Callback = function(V) _G.AutoFly = V end,
+})
+
+MoveTab:CreateToggle({
+   Name = "Infinite Jump (Air Tap)",
    CurrentValue = false,
    Callback = function(V) _G.InfJump = V end,
 })
 
 MoveTab:CreateSlider({
-   Name = "Speed Bypass",
+   Name = "Speed Boost",
    Range = {0, 100},
    Increment = 1,
    CurrentValue = 0,
    Callback = function(V) _G.SpeedBoost = V end,
 })
 
--- [[ SETTINGS ]] --
+-- [[ 🛡️ DEFENSE ]] --
+local DefTab = Window:CreateTab("🛡️ Defense", nil)
+DefTab:CreateToggle({
+    Name = "Anti-Death",
+    CurrentValue = false,
+    Callback = function(V)
+        local hum = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if hum then hum.Health = 100 end
+    end
+})
+
+-- [[ ⚙️ SETTINGS ]] --
 local ConfigTab = Window:CreateTab("⚙️ Settings", nil)
 ConfigTab:CreateButton({
-   Name = "🚨 SCRIPT RESET",
+   Name = "🚨 FULL RESET",
    Callback = function()
        MainLoop:Disconnect()
        Rayfield:Destroy()
    end,
 })
 
-Rayfield:Notify({Title = "V1 READY", Content = "Slider renamed to POWER JUMP!", Duration = 5})
+Rayfield:Notify({Title = "V1.5 MOBILE", Content = "Power Jump is now a TOGGLE for phones!", Duration = 5})
