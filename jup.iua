@@ -3,84 +3,79 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA V29 | SERVER-BYPASS",
-   LoadingTitle = "Bypassing Server Locks...",
-   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV29" }
+   Name = "ULTIMA V1 | POWER EDITION",
+   LoadingTitle = "Boosting Jump Force...",
+   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV31" }
 })
 
 -- [[ SHARED VALUES ]] --
 _G.SpeedBoost = 0
-_G.JumpForce = 0
-_G.GodMode = false
+_G.PowerJump = 0
 _G.InfJump = false
 
--- [[ THE DELTA-FORCE LOOP ]] --
+-- [[ POWER JUMP LOOP ]] --
 local MainLoop = RunService.Heartbeat:Connect(function()
     local p = game.Players.LocalPlayer
     local char = p.Character
-    if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
-        local hum = char.Humanoid
+    if char and char:FindFirstChild("HumanoidRootPart") then
         local hrp = char.HumanoidRootPart
+        local hum = char:FindFirstChild("Humanoid")
         
-        -- DELTA SPEED (Moves your CFrame based on direction)
-        if _G.SpeedBoost > 0 and hum.MoveDirection.Magnitude > 0 then
+        -- Power Jump Logic (While Holding Space)
+        if _G.PowerJump > 0 and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+            hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.PowerJump, hrp.Velocity.Z)
+        end
+
+        -- Speed Bypass
+        if _G.SpeedBoost > 0 and hum and hum.MoveDirection.Magnitude > 0 then
             hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (_G.SpeedBoost / 10))
-        end
-
-        -- DELTA JUMP (Manual Velocity Injection)
-        if _G.JumpForce > 0 and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
-            hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.JumpForce, hrp.Velocity.Z)
-        end
-
-        -- ANTI-DEATH
-        if _G.GodMode then
-            hum.Health = 100
-            hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
         end
     end
 end)
 
--- [[ 🏃 MOVEMENT TAB ]] --
+-- [[ INF JUMP LOGIC ]] --
+UserInputService.JumpRequest:Connect(function()
+    if _G.InfJump then
+        local p = game.Players.LocalPlayer
+        if p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            p.Character.HumanoidRootPart.Velocity = Vector3.new(p.Character.HumanoidRootPart.Velocity.X, 60, p.Character.HumanoidRootPart.Velocity.Z)
+        end
+    end
+end)
+
+-- [[ MOVEMENT TAB ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
 
 MoveTab:CreateSlider({
-   Name = "Delta Speed (Bypass)",
+   Name = "POWER JUMP (Hold Space)",
+   Range = {0, 500},
+   Increment = 10,
+   CurrentValue = 0,
+   Callback = function(V) _G.PowerJump = V end,
+})
+
+MoveTab:CreateToggle({
+   Name = "Infinite Jump (Air Walk)",
+   CurrentValue = false,
+   Callback = function(V) _G.InfJump = V end,
+})
+
+MoveTab:CreateSlider({
+   Name = "Speed Bypass",
    Range = {0, 100},
    Increment = 1,
    CurrentValue = 0,
    Callback = function(V) _G.SpeedBoost = V end,
 })
 
-MoveTab:CreateSlider({
-   Name = "Delta Jump (Velocity)",
-   Range = {0, 400},
-   Increment = 5,
-   CurrentValue = 0,
-   Callback = function(V) _G.JumpForce = V end,
-})
-
-MoveTab:CreateToggle({
-   Name = "Infinite Jump (Air Leap)",
-   CurrentValue = false,
-   Callback = function(V) _G.InfJump = V end,
-})
-
--- [[ 🛡️ DEFENSE ]] --
-local DefTab = Window:CreateTab("🛡️ Defense", nil)
-DefTab:CreateToggle({Name = "Immortal Mode", CurrentValue = false, Callback = function(V) _G.GodMode = V end})
-
--- [[ ⚙️ SETTINGS ]] --
+-- [[ SETTINGS ]] --
 local ConfigTab = Window:CreateTab("⚙️ Settings", nil)
 ConfigTab:CreateButton({
-   Name = "🚨 FULL RESET (IF STUCK)",
+   Name = "🚨 SCRIPT RESET",
    Callback = function()
        MainLoop:Disconnect()
        Rayfield:Destroy()
    end,
 })
 
--- [[ 🛠️ TOOLS ]] --
-local ToolTab = Window:CreateTab("🛠️ Tools", nil)
-ToolTab:CreateButton({Name = "Infinite Yield", Callback = function() loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))() end})
-
-Rayfield:Notify({Title = "V29 ACTIVE", Content = "Use Delta sliders—they don't use Roblox stats!", Duration = 5})
+Rayfield:Notify({Title = "V1 READY", Content = "Slider renamed to POWER JUMP!", Duration = 5})
