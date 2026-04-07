@@ -1,11 +1,11 @@
--- hope you enjoy we script --
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA HUB | V13 (STRICT)",
-   LoadingTitle = "Bypassing Server Checks...",
-   LoadingSubtitle = "Forcing Stats...",
+   Name = "ULTIMA HUB | V14 (INF JUMP)",
+   LoadingTitle = "Bypassing Gravity...",
+   LoadingSubtitle = "Adding Air-Jump...",
    ConfigurationSaving = { Enabled = true, FolderName = "UltimaConfig" }
 })
 
@@ -13,27 +13,30 @@ local Window = Rayfield:CreateWindow({
 _G.WalkSpeed = 16
 _G.JumpPower = 50
 _G.GodMode = false
+_G.InfJump = false
 
--- [[ THE "STRICT" BYPASS LOOP ]] --
--- This runs every single frame to stop the game from resetting you
+-- [[ INFINITE JUMP LOGIC ]] --
+UserInputService.JumpRequest:Connect(function()
+    if _G.InfJump then
+        local p = game.Players.LocalPlayer
+        if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
+            p.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+        end
+    end
+end)
+
+-- [[ THE STRICT BYPASS LOOP ]] --
 RunService.Stepped:Connect(function()
     local p = game.Players.LocalPlayer
     if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
         local hum = p.Character:FindFirstChildOfClass("Humanoid")
         
-        -- Force Speed (if slider is moved)
-        if _G.WalkSpeed > 16 then
-            hum.WalkSpeed = _G.WalkSpeed
-        end
-        
-        -- Force Jump (if slider is moved)
-        if _G.JumpPower > 50 then
-            hum.UseJumpPower = true
-            hum.JumpPower = _G.JumpPower
+        if _G.WalkSpeed > 16 then hum.WalkSpeed = _G.WalkSpeed end
+        if _G.JumpPower > 50 then 
+            hum.UseJumpPower = true 
+            hum.JumpPower = _G.JumpPower 
             hum.JumpHeight = _G.JumpPower / 7
         end
-
-        -- Force God Mode
         if _G.GodMode then
             hum.Health = 100
             hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
@@ -41,8 +44,15 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- [[ 🏃 MOVEMENT TAB ]] --
+-- [[ 1. MOVEMENT TAB ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
+
+MoveTab:CreateToggle({
+   Name = "Infinite Jump",
+   CurrentValue = false,
+   Callback = function(Value) _G.InfJump = Value end,
+})
+
 MoveTab:CreateSlider({
    Name = "Strict Walk Speed",
    Range = {16, 300},
@@ -59,7 +69,7 @@ MoveTab:CreateSlider({
    Callback = function(V) _G.JumpPower = V end,
 })
 
--- [[ 🛡️ DEFENSE TAB ]] --
+-- [[ 2. DEFENSE TAB ]] --
 local DefTab = Window:CreateTab("🛡️ Defense", nil)
 DefTab:CreateToggle({
    Name = "Auto-Heal God Mode",
@@ -67,7 +77,7 @@ DefTab:CreateToggle({
    Callback = function(V) _G.GodMode = V end,
 })
 
--- [[ 👁️ VISUALS TAB ]] --
+-- [[ 3. VISUALS TAB ]] --
 local VisTab = Window:CreateTab("👁️ Visuals", nil)
 VisTab:CreateToggle({
    Name = "Player ESP",
@@ -87,7 +97,7 @@ VisTab:CreateToggle({
    end,
 })
 
--- [[ ⚙️ SETTINGS TAB ]] --
+-- [[ 4. SETTINGS & TOOLS ]] --
 local ConfigTab = Window:CreateTab("⚙️ Settings", nil)
 ConfigTab:CreateDropdown({
    Name = "Menu Theme",
@@ -96,11 +106,10 @@ ConfigTab:CreateDropdown({
    Callback = function(Option) Window:ModifyTheme(Option[1]) end,
 })
 
--- [[ 🛠️ TOOLS ]] --
 local ToolTab = Window:CreateTab("🛠️ Tools", nil)
 ToolTab:CreateButton({
    Name = "Load Dark Dex",
    Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))() end,
 })
 
-Rayfield:Notify({Title = "V13 READY", Content = "Strict Loop is forcing your stats!", Duration = 5})
+Rayfield:Notify({Title = "V14 LOADED", Content = "Infinite Jump is ready in the Movement tab!", Duration = 5})
