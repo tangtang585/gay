@@ -52,7 +52,7 @@ local MoveTab = Window:CreateTab("🏃 Movement", nil)
 
 MoveTab:CreateSlider({
    Name = "Blink Speed (Anti-Reset)",
-   Range = {0, 50},
+   Range = {0, 505},
    Increment = 1,
    CurrentValue = 0,
    Callback = function(V) _G.BlinkSpeed = V end,
