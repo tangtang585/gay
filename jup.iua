@@ -3,38 +3,39 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA V23 | OMNI-REIGN",
-   LoadingTitle = "Breaking Admin Limits...",
-   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV23" }
+   Name = "ULTIMA V25 | 99 NIGHTS BYPASS",
+   LoadingTitle = "Hard-Patching Movement...",
+   ConfigurationSaving = { Enabled = true, FolderName = "UltimaV25" }
 })
 
 -- [[ SHARED VALUES ]] --
-_G.WalkSpeed = 16
+_G.BlinkSpeed = 0 -- 0 is off, 1-5 is safe, 10+ is very fast
 _G.JumpPower = 50
 _G.GodMode = false
 _G.InfJump = false
-_G.InfZoom = false
-_G.FlingActive = false
 
--- [[ THE SUPREME FORCE LOOP ]] --
--- This runs on "PreRender" to beat the game's internal speed checks
-RunService.PreRender:Connect(function()
+-- [[ THE HARD-BYPASS LOOP ]] --
+RunService.Heartbeat:Connect(function()
     local p = game.Players.LocalPlayer
-    if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
-        local hum = p.Character:FindFirstChildOfClass("Humanoid")
-        local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+    local char = p.Character
+    if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
+        local hum = char.Humanoid
+        local hrp = char.HumanoidRootPart
         
-        -- Movement Bypasses
-        if _G.WalkSpeed > 16 then hum.WalkSpeed = _G.WalkSpeed end
-        if _G.JumpPower > 50 then hum.UseJumpPower = true hum.JumpPower = _G.JumpPower end
-        
-        -- God & Zoom
-        if _G.GodMode then hum.Health = 100 hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false) end
-        if _G.InfZoom then p.CameraMaxZoomDistance = 100000 else p.CameraMaxZoomDistance = 128 end
+        -- BLINK BYPASS: Moves your CFrame so WalkSpeed stays 16
+        if _G.BlinkSpeed > 0 and hum.MoveDirection.Magnitude > 0 then
+            hrp.CFrame = hrp.CFrame + (hum.MoveDirection * (_G.BlinkSpeed / 10))
+        end
 
-        -- Fling Logic (Vibrates HRP to launch others)
-        if _G.FlingActive and hrp then
-            hrp.Velocity = hrp.Velocity * Vector3.new(1, 0, 1) + Vector3.new(0, 8000, 0)
+        -- JUMP BYPASS: Forces the velocity up
+        if _G.JumpPower > 50 and UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+             hrp.Velocity = Vector3.new(hrp.Velocity.X, _G.JumpPower, hrp.Velocity.Z)
+        end
+
+        -- GOD MODE: Constant state check
+        if _G.GodMode then
+            hum.Health = 100
+            hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
         end
     end
 end)
@@ -42,31 +43,53 @@ end)
 -- [[ INFINITE JUMP ]] --
 UserInputService.JumpRequest:Connect(function()
     if _G.InfJump then
-        local p = game.Players.LocalPlayer
-        if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
-            p.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-        end
+        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
     end
 end)
 
 -- [[ 1. MOVEMENT TAB ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
+
+MoveTab:CreateSlider({
+   Name = "Blink Speed (Anti-Reset)",
+   Range = {0, 50},
+   Increment = 1,
+   CurrentValue = 0,
+   Callback = function(V) _G.BlinkSpeed = V end,
+})
+
+MoveTab:CreateSlider({
+   Name = "Forced Jump Power",
+   Range = {50, 300},
+   Increment = 1,
+   CurrentValue = 50,
+   Callback = function(V) _G.JumpPower = V end,
+})
+
 MoveTab:CreateToggle({Name = "Infinite Jump", CurrentValue = false, Callback = function(V) _G.InfJump = V end})
-MoveTab:CreateSlider({Name = "Force Speed", Range = {16, 500}, CurrentValue = 16, Callback = function(V) _G.WalkSpeed = V end})
-MoveTab:CreateSlider({Name = "Force Jump", Range = {50, 800}, CurrentValue = 50, Callback = function(V) _G.JumpPower = V end})
 
--- [[ 2. TROLL & COMBAT ]] --
-local TrollTab = Window:CreateTab("🌪️ Troll", nil)
-TrollTab:CreateToggle({Name = "Invisible Fling", CurrentValue = false, Callback = function(V) _G.FlingActive = V end})
-TrollTab:CreateToggle({Name = "Infinite Zoom Out", CurrentValue = false, Callback = function(V) _G.InfZoom = V end})
-
--- [[ 3. DEFENSE ]] --
+-- [[ 2. DEFENSE TAB ]] --
 local DefTab = Window:CreateTab("🛡️ Defense", nil)
-DefTab:CreateToggle({Name = "Admin-Proof God", CurrentValue = false, Callback = function(V) _G.GodMode = V end})
+DefTab:CreateToggle({Name = "Immortal God Mode", CurrentValue = false, Callback = function(V) _G.GodMode = V end})
 
--- [[ 4. TOOLS ]] --
+-- [[ 3. VISUALS & TOOLS ]] --
+local VisTab = Window:CreateTab("👁️ Visuals", nil)
+VisTab:CreateToggle({
+   Name = "Player ESP",
+   CurrentValue = false,
+   Callback = function(V)
+      for _, p in pairs(game.Players:GetPlayers()) do
+          if p ~= game.Players.LocalPlayer and p.Character then
+              if V then
+                  local h = Instance.new("Highlight", p.Character)
+                  h.Name = "UltimaESP"
+              elseif p.Character:FindFirstChild("UltimaESP") then
+                  p.Character.UltimaESP:Destroy()
+              end
+          end
+      end
+   end,
+})
+
 local ToolTab = Window:CreateTab("🛠️ Tools", nil)
 ToolTab:CreateButton({Name = "Infinite Yield", Callback = function() loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))() end})
-ToolTab:CreateButton({Name = "Dark Dex", Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))() end})
-
-Rayfield:Notify({Title = "V23 ACTIVE", Content = "Force Loop is beating the game's reset script!", Duration = 5})
