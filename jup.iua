@@ -3,19 +3,19 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA HUB | V15 (IMMORTAL)",
-   LoadingTitle = "Bypassing Kill-Scripts...",
-   LoadingSubtitle = "Fixing God Mode...",
+   Name = "ULTIMA HUB | V17 (ADMIN FIX)",
+   LoadingTitle = "Bypassing Admin Scripts...",
+   LoadingSubtitle = "Setting Force-Stats...",
    ConfigurationSaving = { Enabled = true, FolderName = "UltimaConfig" }
 })
 
--- [[ GLOBAL VALUES ]] --
+-- [[ SHARED VALUES ]] --
 _G.WalkSpeed = 16
 _G.JumpPower = 50
 _G.GodMode = false
 _G.InfJump = false
 
--- [[ INFINITE JUMP ]] --
+-- [[ INFINITE JUMP LOGIC ]] --
 UserInputService.JumpRequest:Connect(function()
     if _G.InfJump then
         local p = game.Players.LocalPlayer
@@ -25,31 +25,33 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- [[ THE SUPREME BYPASS LOOP ]] --
-RunService.Stepped:Connect(function()
+-- [[ THE HEARTBEAT FORCE LOOP ]] --
+-- This runs after every frame to override Admin speed resets
+RunService.Heartbeat:Connect(function()
     local p = game.Players.LocalPlayer
     if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
         local hum = p.Character:FindFirstChildOfClass("Humanoid")
         
-        -- Force Movement
-        if _G.WalkSpeed > 16 then hum.WalkSpeed = _G.WalkSpeed end
-        if _G.JumpPower > 50 then 
-            hum.UseJumpPower = true 
-            hum.JumpPower = _G.JumpPower 
+        -- Force Speed
+        if _G.WalkSpeed > 16 then
+            hum.WalkSpeed = _G.WalkSpeed
+        end
+        
+        -- Force Jump
+        if _G.JumpPower > 50 then
+            hum.UseJumpPower = true
+            hum.JumpPower = _G.JumpPower
         end
 
-        -- THE GOD MODE FIX: Blocks the "Dead" signal every frame
+        -- Force God Mode
         if _G.GodMode then
-            hum.Health = 999999 -- Overfill health to bypass small checks
+            hum.Health = 100
             hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-            if hum.Health <= 0 then
-                hum.Health = 100
-            end
         end
     end
 end)
 
--- [[ 1. MOVEMENT TAB ]] --
+-- [[ 🏃 MOVEMENT TAB ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
 MoveTab:CreateToggle({
    Name = "Infinite Jump",
@@ -57,37 +59,29 @@ MoveTab:CreateToggle({
    Callback = function(V) _G.InfJump = V end,
 })
 MoveTab:CreateSlider({
-   Name = "Strict Speed",
-   Range = {16, 300},
+   Name = "Admin Speed",
+   Range = {16, 500},
+   Increment = 1,
    CurrentValue = 16,
    Callback = function(V) _G.WalkSpeed = V end,
 })
 MoveTab:CreateSlider({
-   Name = "Strict Jump",
-   Range = {50, 600},
+   Name = "Admin Jump",
+   Range = {50, 800},
+   Increment = 1,
    CurrentValue = 50,
    Callback = function(V) _G.JumpPower = V end,
 })
 
--- [[ 2. DEFENSE TAB (THE FIX) ]] --
+-- [[ 🛡️ DEFENSE TAB ]] --
 local DefTab = Window:CreateTab("🛡️ Defense", nil)
 DefTab:CreateToggle({
-   Name = "ULTRA GOD (Anti-Death)",
+   Name = "Safe God Mode",
    CurrentValue = false,
-   Callback = function(V) 
-      _G.GodMode = V 
-      Rayfield:Notify({Title = "Defense", Content = "Immortal Mode: " .. (V and "ON" or "OFF"), Duration = 3})
-   end,
+   Callback = function(V) _G.GodMode = V end,
 })
 
-DefTab:CreateButton({
-   Name = "Hard Reset (Use if Glitched)",
-   Callback = function()
-       game.Players.LocalPlayer.Character:BreakJoints()
-   end,
-})
-
--- [[ 3. VISUALS & SETTINGS ]] --
+-- [[ 👁️ VISUALS TAB ]] --
 local VisTab = Window:CreateTab("👁️ Visuals", nil)
 VisTab:CreateToggle({
    Name = "Player ESP",
@@ -106,6 +100,7 @@ VisTab:CreateToggle({
    end,
 })
 
+-- [[ ⚙️ SETTINGS & TOOLS ]] --
 local ConfigTab = Window:CreateTab("⚙️ Settings", nil)
 ConfigTab:CreateDropdown({
    Name = "Menu Theme",
@@ -119,3 +114,5 @@ ToolTab:CreateButton({
    Name = "Load Dark Dex",
    Callback = function() loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))() end,
 })
+
+Rayfield:Notify({Title = "V17 LOADED", Content = "Speed and Jump are now forced for Admin maps!", Duration = 5})
