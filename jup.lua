@@ -1,11 +1,11 @@
--- hope youre gay --
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA HUB | V20 (ADMIN-PROOF)",
-   LoadingTitle = "cool",
-   ConfigurationSaving = { Enabled = true, FolderName = "UltimaConfig" }
+   Name = "ULTIMA V22 | FLING EDITION",
+   LoadingTitle = "Loading Fling Modules...",
+   ConfigurationSaving = { Enabled = true, FolderName = "UltimaFling" }
 })
 
 -- [[ SHARED VALUES ]] --
@@ -13,46 +13,69 @@ _G.WalkSpeed = 16
 _G.JumpPower = 50
 _G.GodMode = false
 _G.InfJump = false
+_G.FlingActive = false
 
--- [[ THE "ADMIN-SHIELD" LOGIC ]] --
+-- [[ FLING LOGIC ]] --
+-- This makes your character "invisible" and spinning to fling others
+local function ToggleFling(v)
+    _G.FlingActive = v
+    local lp = game.Players.LocalPlayer
+    local char = lp.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    
+    local hrp = char.HumanoidRootPart
+    task.spawn(function()
+        while _G.FlingActive do
+            RunService.Heartbeat:Wait()
+            local velocity = hrp.Velocity
+            hrp.Velocity = velocity * Vector3.new(1, 0, 1) + Vector3.new(0, 5000, 0)
+            RunService.RenderStepped:Wait()
+            hrp.Velocity = velocity
+        end
+    end)
+end
+
+-- [[ UNIVERSAL LOOP ]] --
 RunService.Heartbeat:Connect(function()
     local p = game.Players.LocalPlayer
     if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
         local hum = p.Character:FindFirstChildOfClass("Humanoid")
-        
-        -- Movement Bypasses
         if _G.WalkSpeed > 16 then hum.WalkSpeed = _G.WalkSpeed end
-        if _G.JumpPower > 50 then 
-            hum.UseJumpPower = true 
-            hum.JumpPower = _G.JumpPower 
-        end
-
-        -- THE NEW GOD MODE: Blocks state changes
+        if _G.JumpPower > 50 then hum.UseJumpPower = true hum.JumpPower = _G.JumpPower end
         if _G.GodMode then
             hum.Health = 100
-            -- This blocks the ":kill" command from forcing the Dead state
             hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-            hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-            hum:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
         end
     end
 end)
 
--- [[ 1. MOVEMENT TAB ]] --
+-- [[ 1. MOVEMENT ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
 MoveTab:CreateToggle({Name = "Infinite Jump", CurrentValue = false, Callback = function(V) _G.InfJump = V end})
-MoveTab:CreateSlider({Name = "Forced Speed", Range = {16, 500}, CurrentValue = 16, Callback = function(V) _G.WalkSpeed = V end})
-MoveTab:CreateSlider({Name = "Forced Jump", Range = {50, 800}, CurrentValue = 50, Callback = function(V) _G.JumpPower = V end})
+MoveTab:CreateSlider({Name = "Speed", Range = {16, 500}, CurrentValue = 16, Callback = function(V) _G.WalkSpeed = V end})
 
--- [[ 2. DEFENSE TAB (THE ADMIN FIX) ]] --
-local DefTab = Window:CreateTab("🛡️ Defense", nil)
-DefTab:CreateToggle({
-   Name = "Admin-Proof God Mode",
+-- [[ 2. FLING & COMBAT (NEW!) ]] --
+local FlingTab = Window:CreateTab("🌪️ Fling", nil)
+
+FlingTab:CreateToggle({
+   Name = "Invisible Fling (Touch to Launch)",
    CurrentValue = false,
-   Callback = function(V) _G.GodMode = V end,
+   Callback = function(V) ToggleFling(V) end,
 })
 
--- [[ 3. VISUALS & TOOLS ]] --
+FlingTab:CreateButton({
+   Name = "Kill All (Requires Tools)",
+   Callback = function()
+       -- Loads a universal kill-all script if the game has tools
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/GwnVvw/KillAll/main/Source.lua"))()
+   end,
+})
+
+-- [[ 3. DEFENSE ]] --
+local DefTab = Window:CreateTab("🛡️ Defense", nil)
+DefTab:CreateToggle({Name = "Admin-Proof God", CurrentValue = false, Callback = function(V) _G.GodMode = V end})
+
+-- [[ 4. VISUALS & TOOLS ]] --
 local VisTab = Window:CreateTab("👁️ Visuals", nil)
 VisTab:CreateToggle({
    Name = "Player ESP",
@@ -72,13 +95,4 @@ VisTab:CreateToggle({
 })
 
 local ToolTab = Window:CreateTab("🛠️ Tools", nil)
-ToolTab:CreateButton({
-   Name = "Anti-Lag / Clear Map",
-   Callback = function()
-      for _, v in pairs(game.Workspace:GetChildren()) do
-          if v:IsA("BasePart") and v.Name ~= "Baseplate" then v:Destroy() end
-      end
-   end,
-})
-
-Rayfield:Notify({Title = "V20 LOADED", Content = "Admin-Proof Defense is ACTIVE.", Duration = 5})
+ToolTab:CreateButton({Name = "Infinite Yield", Callback = function() loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))() end})
