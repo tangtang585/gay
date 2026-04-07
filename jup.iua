@@ -3,9 +3,9 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 
 local Window = Rayfield:CreateWindow({
-   Name = "ULTIMA HUB | V18 (INF ZOOM)",
-   LoadingTitle = "Unlocking Camera Limits...",
-   LoadingSubtitle = "Setting Infinite Zoom...",
+   Name = "ULTIMA HUB | V19 (BYPASS)",
+   LoadingTitle = "make by yourself",
+   LoadingSubtitle = "power by android lol",
    ConfigurationSaving = { Enabled = true, FolderName = "UltimaConfig" }
 })
 
@@ -16,20 +16,35 @@ _G.GodMode = false
 _G.InfJump = false
 _G.InfZoom = false
 
--- [[ INFINITE ZOOM LOGIC ]] --
-task.spawn(function()
-    while true do
-        task.wait(1) -- Checks every second
-        local player = game.Players.LocalPlayer
-        if _G.InfZoom and player then
-            player.CameraMaxZoomDistance = 100000 -- Sets zoom to basically infinite
-        elseif not _G.InfZoom and player then
-            player.CameraMaxZoomDistance = 128 -- Returns to normal Roblox limit
+-- [[ BYPASS LOGIC ]] --
+RunService.Heartbeat:Connect(function()
+    local p = game.Players.LocalPlayer
+    if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
+        local hum = p.Character:FindFirstChildOfClass("Humanoid")
+        
+        -- This forces the speed even if the game resets it to 16
+        if _G.WalkSpeed > 16 then hum.WalkSpeed = _G.WalkSpeed end
+        
+        -- This forces the jump even if the game resets it to 50
+        if _G.JumpPower > 50 then 
+            hum.UseJumpPower = true 
+            hum.JumpPower = _G.JumpPower 
+        end
+
+        if _G.GodMode then
+            hum.Health = 100
+            hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+        end
+        
+        if _G.InfZoom then
+            p.CameraMaxZoomDistance = 100000
+        else
+            p.CameraMaxZoomDistance = 128
         end
     end
 end)
 
--- [[ INFINITE JUMP LOGIC ]] --
+-- [[ INFINITE JUMP ]] --
 UserInputService.JumpRequest:Connect(function()
     if _G.InfJump then
         local p = game.Players.LocalPlayer
@@ -39,40 +54,31 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- [[ THE HEARTBEAT FORCE LOOP ]] --
-RunService.Heartbeat:Connect(function()
-    local p = game.Players.LocalPlayer
-    if p.Character and p.Character:FindFirstChildOfClass("Humanoid") then
-        local hum = p.Character:FindFirstChildOfClass("Humanoid")
-        if _G.WalkSpeed > 16 then hum.WalkSpeed = _G.WalkSpeed end
-        if _G.JumpPower > 50 then hum.UseJumpPower = true hum.JumpPower = _G.JumpPower end
-        if _G.GodMode then
-            hum.Health = 100
-            hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-        end
-    end
-end)
-
 -- [[ 1. MOVEMENT TAB ]] --
 local MoveTab = Window:CreateTab("🏃 Movement", nil)
 MoveTab:CreateToggle({Name = "Infinite Jump", CurrentValue = false, Callback = function(V) _G.InfJump = V end})
-MoveTab:CreateSlider({Name = "Admin Speed", Range = {16, 500}, CurrentValue = 16, Callback = function(V) _G.WalkSpeed = V end})
-MoveTab:CreateSlider({Name = "Admin Jump", Range = {50, 800}, CurrentValue = 50, Callback = function(V) _G.JumpPower = V end})
-
--- [[ 2. CAMERA TAB (NEW!) ]] --
-local CamTab = Window:CreateTab("🎥 Camera", nil)
-CamTab:CreateToggle({
-   Name = "Infinite Zoom Out",
-   CurrentValue = false,
-   Callback = function(V) 
-      _G.InfZoom = V 
-      Rayfield:Notify({Title = "Camera", Content = "Infinite Zoom: " .. (V and "ON" or "OFF"), Duration = 2})
-   end,
+MoveTab:CreateSlider({
+   Name = "Bypass Speed",
+   Range = {16, 500},
+   Increment = 1,
+   CurrentValue = 16,
+   Callback = function(V) _G.WalkSpeed = V end,
 })
+MoveTab:CreateSlider({
+   Name = "Bypass Jump",
+   Range = {50, 800},
+   Increment = 1,
+   CurrentValue = 50,
+   Callback = function(V) _G.JumpPower = V end,
+})
+
+-- [[ 2. CAMERA TAB ]] --
+local CamTab = Window:CreateTab("🎥 Camera", nil)
+CamTab:CreateToggle({Name = "Infinite Zoom Out", CurrentValue = false, Callback = function(V) _G.InfZoom = V end})
 
 -- [[ 3. DEFENSE TAB ]] --
 local DefTab = Window:CreateTab("🛡️ Defense", nil)
-DefTab:CreateToggle({Name = "Safe God Mode", CurrentValue = false, Callback = function(V) _G.GodMode = V end})
+DefTab:CreateToggle({Name = "Immortal Mode", CurrentValue = false, Callback = function(V) _G.GodMode = V end})
 
 -- [[ 4. VISUALS & TOOLS ]] --
 local VisTab = Window:CreateTab("👁️ Visuals", nil)
@@ -108,4 +114,4 @@ ConfigTab:CreateDropdown({
    Callback = function(Option) Window:ModifyTheme(Option[1]) end,
 })
 
-Rayfield:Notify({Title = "V18 LOADED", Content = "Infinite Zoom added to the Camera tab!", Duration = 5})
+Rayfield:Notify({Title = "V19 LOADED", Content = "Bypass is active! Use the sliders to move.", Duration = 5})
